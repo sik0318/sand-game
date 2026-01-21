@@ -13,8 +13,9 @@
         #game-screen { display: none; height: 100vh; position: relative; transition: transform 1.5s ease-out; } 
         #center-container { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 100%; }
         
+        /* [2번] 막대를 모래 뒤로 보내기 위해 z-index 조절 */
         #sand { width: 220px; background: #edc9af; margin: 0 auto; transition: height 0.5s; border-radius: 110px 110px 0 0; position: relative; z-index: 2; }
-        #stick { width: 10px; height: 160px; background: #8b4513; position: absolute; bottom: 90%; left: 105px; border-radius: 5px; transition: transform 0.05s; transform-origin: bottom; z-index: 3; }
+        #stick { width: 10px; height: 160px; background: #8b4513; position: absolute; bottom: 85%; left: 105px; border-radius: 5px; transition: transform 0.05s; transform-origin: bottom; z-index: 1; }
         
         #hand { position: absolute; font-size: 50px; display: none; z-index: 10; transition: all 0.6s; left: 50%; margin-left: -25px; top: 0; }
         .hand-anim { display: block !important; animation: sweep 0.8s forwards; }
@@ -166,10 +167,13 @@
         socket.on('gameOver', (data) => {
             isGameActive = false;
             document.getElementById('ui').style.display = 'none';
-            const msg = document.getElementById('msg');
-            msg.innerText = "어... 어?! 막대가...!!!";
             
+            // [3번] 멘트를 미리 바꾸지 않고 평소처럼 흔들리게 시작
+            // 플레이어는 흔들림이 멈출 때까지 결과를 모름
             shakeStick(1.0, () => {
+                const msg = document.getElementById('msg');
+                msg.innerText = "앗... 막대가...!!!"; // 흔들림이 완전히 끝난 직후에 멘트 표시
+                
                 document.getElementById('game-screen').classList.add('zoom-in');
                 const stick = document.getElementById('stick');
                 stick.style.transition = "transform 2.5s ease-in-out"; 
@@ -179,7 +183,8 @@
                     document.getElementById('game-screen').classList.remove('zoom-in');
                     msg.innerHTML = `<span style="color:red">💥 패배: ${data.loserName}</span>`;
                     document.getElementById('result-area').style.display = 'block';
-                    document.getElementById('final-results').innerHTML = `<b>📊 최종 획득량</b><br>${data.results}`;
+                    // [1번] 최종 모래 획득량으로 문구 수정
+                    document.getElementById('final-results').innerHTML = `<b>📊 최종 모래 획득량</b><br>${data.results}`;
                     if (data.hostId === socket.id) {
                         document.getElementById('restart-buttons').style.display = 'block';
                     }
